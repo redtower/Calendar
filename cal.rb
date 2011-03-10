@@ -15,20 +15,17 @@ class ConsoleColor
   @@reset = "reset"
 
   def set(name, reverse = false)
-    names      =  [@@red,        @@blue,       @@lightgray,    @@lightred]
-    colors     = [["\033[0;31m", "\033[0;34m", "\033[0;37m",    "\033[1;31m",], # ノーマル
-                  ["\033[0;31m", "\033[0;34m", "\033[0;30;47m", "\033\1;31m",]] # 反転
+    colors = {
+      @@red      =>["\033[0;31m", "\033[0;30;41m"],
+      @@blue     =>["\033[0;34m", "\033[0;30;44m"],
+      @@lightgray=>["\033[0;37m", "\033[0;30;47m"],
+      @@lightred =>["\033[1;31m", "\033[1;30;41m"],}
 
-    idx = names.index(name)
-    if idx == nil then
+    if colors[name] == nil then
       str = "\033[m"              # reset
     else
-      if reverse then
-        str = colors[1][idx]
-      else
-        str = colors[0][idx]
-      end
-    end
+      str = colors[name][if reverse then 1 else 0 end]
+   end
 
     return str
   end
@@ -395,7 +392,6 @@ OptionParser.new{ |opt|
 }
 
 # TODO help を記述する。
-# TODO 当日が土曜、日曜、祝日の時の highlight 表示を確認する。
 # TODO カレンダーに出力した祝日の名前一覧を出力する。
 
 y = 0
