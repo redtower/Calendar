@@ -362,14 +362,12 @@ OptionParser.new{ |opt|
   opt.parse!(ARGV)
 }
 
-# TODO 年のみ指定した時に 1 年分のカレンダー出力をする。
 # TODO help を記述する。
 # TODO 当日が土曜、日曜、祝日の時の highlight 表示を確認する。
 # TODO カレンダーに出力した祝日の名前一覧を出力する。
 
-# 当日の年月をデフォルトとする。
-y = Time.now.year
-m = Time.now.month
+y = 0
+m = 0
 
 # 引数より 1～12 を月、それ以外を年として取得する。
 ARGV.each do |arg|
@@ -388,8 +386,21 @@ if ohash[:m] != nil && isDecimal(ohash[:m]) then
   m = ohash[:m].to_i
 end
 
-d = Date.new(y, m, 1)
+if y != 0 && m == 0 then
+  for m in [2, 5, 8, 11]
+    d = Date.new(y, m, 1)
 
-puttitle(d, ohash[:three])
-putwday(ohash[:three])
-putday(d, ohash[:h], ohash[:three])
+    puttitle(d, true)
+    putwday(true)
+    putday(d, ohash[:h], true)
+  end
+else
+  y = Time.now.year  if y == 0
+  m = Time.now.month if m == 0
+
+  d = Date.new(y, m, 1)
+
+  puttitle(d, ohash[:three])
+  putwday(ohash[:three])
+  putday(d, ohash[:h], ohash[:three])
+end
