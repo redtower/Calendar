@@ -8,15 +8,16 @@ ONEDAY_COLUMN_SIZE = 1 + 2                # 1 日分のカラムサイズ
 $ONEDAY_SPC = ($SPC * ONEDAY_COLUMN_SIZE) # 1 日分の空白
 
 class ConsoleColor
-  @@red = "red";
-  @@blue = "blue";
-  @@lightgray = "lightgray";
-  @@reset = "reset";
+  @@red = "red"
+  @@lightred = "lightred"
+  @@blue = "blue"
+  @@lightgray = "lightgray"
+  @@reset = "reset"
 
   def set(name, reverse = false)
-    names      =  [@@red,        @@blue,       @@lightgray]
-    colors     = [["\033[0;31m", "\033[0;34m", "\033[0;37m"],    # ノーマル
-                  ["\033[0;31m", "\033[0;34m", "\033[0;30;47m"]] # 反転
+    names      =  [@@red,        @@blue,       @@lightgray,    @@lightred]
+    colors     = [["\033[0;31m", "\033[0;34m", "\033[0;37m",    "\033[1;31m",], # ノーマル
+                  ["\033[0;31m", "\033[0;34m", "\033[0;30;47m", "\033\1;31m",]] # 反転
 
     idx = names.index(name)
     if idx == nil then
@@ -212,8 +213,39 @@ class ConsoleColor
      return day
   end
 
+  def isLocalHolyday(year, month, day)
+    hdays = [[  1,  1,    0, 9999, nil,      '年末年始休暇' ],
+             [  1,  2,    0, 9999, nil,      '年末年始休暇' ],
+             [  1,  3,    0, 9999, nil,      '年末年始休暇' ],
+             [ 12, 29,    0, 9999, nil,      '年末年始休暇' ],
+             [ 12, 30,    0, 9999, nil,      '年末年始休暇' ],
+             [ 12, 31,    0, 9999, nil,      '年末年始休暇' ],
+           ]
+    flg = false;
+
+    hdays.each do |hday|
+      hm = hday[0]
+      next unless month == hm
+
+      hsy = hday[2]
+      hey = hday[3]
+      next unless (year  >= hsy && year <= hey)
+
+      hd = hday[1]
+
+      if day == hd then
+        flg = true
+        break
+      end
+    end
+
+    return flg
+  end
+
   def date2color(year, month, day)
     if isHolyday(year, month, day) then
+      color = @@red
+    elsif isLocalHolyday(year, month, day) then
       color = @@red
     else
       color = wday2color(Date.new(year, month, day).wday)
