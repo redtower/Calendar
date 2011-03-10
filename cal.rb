@@ -252,7 +252,7 @@ def putwday(multi=false)
 
   str = ""
   if multi then
-    for j in 0..2
+    3.times do
       for i in 0..6
         print cc.set(cc.wday2color(i))
         print $SPC + wdays[i]
