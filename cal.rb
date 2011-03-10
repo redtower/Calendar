@@ -74,17 +74,8 @@ class ConsoleColor
   end
 end
 
-def isToday(year, month, day)
-  today = Date.new(Time.now.year, Time.now.month, Time.now.day)
-  return today === Date.new(year, month, day)
-end
-
 def isDecimal(arg)
   return arg =~ /\d/
-end
-
-def isMonth(m)
-  return m >= 1 && m <= 12
 end
 
 def puttitle(d, multi=false)
@@ -148,7 +139,7 @@ def createday(d, highlight)
     end
 
     str << $SPC
-    if isToday(wkd.year, wkd.month, i) && highlight then
+    if HolydayCalendar.isToday(wkd.year, wkd.month, i) && highlight then
       # 今日
       str << cc.set(cc.date2color(wkd.year, wkd.month, wkd.day), true)
     else
@@ -219,7 +210,7 @@ m = 0
 # 引数より 1～12 を月、それ以外を年として取得する。
 ARGV.each do |arg|
   if isDecimal(arg) then
-    if isMonth(arg.to_i) then
+    if HolydayCalendar.isMonth(arg.to_i) then
       m = arg.to_i
     else
       y = arg.to_i

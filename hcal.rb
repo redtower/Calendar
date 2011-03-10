@@ -168,4 +168,13 @@ class HolydayCalendar
     holydays = if holydayslist == nil then [[ nil, nil, nil, nil, nil, nil ],] else holydayslist end
     return isLocalHolyday1(holydays, year, month, day)
   end
+
+  def self.isMonth(m)
+    return m >= 1 && m <= 12
+  end
+
+  def self.isToday(year=@year, month=@month, day=@day)
+    today = Date.new(Time.now.year, Time.now.month, Time.now.day)
+    return today === Date.new(year, month, day)
+  end
 end
