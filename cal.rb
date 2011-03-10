@@ -362,10 +362,16 @@ OptionParser.new{ |opt|
   opt.parse!(ARGV)
 }
 
-d = Date.new(Time.now.year, Time.now.month, Time.now.day)
+# TODO 年のみ指定した時に 1 年分のカレンダー出力をする。
+# TODO help を記述する。
+# TODO 当日が土曜、日曜、祝日の時の highlight 表示を確認する。
+# TODO カレンダーに出力した祝日の名前一覧を出力する。
 
-y=d.year
-m=d.month
+# 当日の年月をデフォルトとする。
+y = Time.now.year
+m = Time.now.month
+
+# 引数より 1～12 を月、それ以外を年として取得する。
 ARGV.each do |arg|
   if isDecimal(arg) then
     if isMonth(arg.to_i) then
@@ -376,12 +382,14 @@ ARGV.each do |arg|
   end
 end
 
+# -m オプションの引数を月として取得する。
 if ohash[:m] != nil && isDecimal(ohash[:m]) then
   abort(m.to_s + " is neither a month number (1..12) nor a name") if !isMonth(ohash[:m].to_i)
   m = ohash[:m].to_i
 end
 
 d = Date.new(y, m, 1)
+
 puttitle(d, ohash[:three])
 putwday(ohash[:three])
 putday(d, ohash[:h], ohash[:three])
