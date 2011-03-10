@@ -8,7 +8,7 @@ class HolydayCalendar
     @day=day
   end
 
-  def isHolyday1(year, month, day)
+  def isNationalHolyday(year, month, day)
     # ref. http://homepage1.nifty.com/~tetsu/ruby/cmd/cal.html
     #          月, 日,開始年,終了年,     区分,  名前
     hdays = [[  1,  1,  1948,  9999,      nil, '元日'         ],
@@ -69,49 +69,64 @@ class HolydayCalendar
     return flg
   end
 
-  def isHolyday(year=@year, month=@month, day=@day)
-    flg = isHolyday1(year, month, day) # 祝日チェック
-
-    # 国民の休日判定
-    unless flg then
-      d = Date.new(year, month, day)
-      bd = d - 1
-      ad = d + 1
-      if d.year >= 1986 &&                        # 1986 年以後
-         isHolyday1(bd.year, bd.month, bd.day) && # 前日が祝日
-         isHolyday1(ad.year, ad.month, ad.day)    # 翌日が祝日
-        flg = true
-      end
+  def isBetweenTwoNationalHolyday(year, month, day)
+    d = Date.new(year, month, day)
+    bd = d - 1
+    ad = d + 1
+    if d.year >= 1986 &&                               # 1986 年以後
+       isNationalHolyday(bd.year, bd.month, bd.day) && # 前日が祝日
+       isNationalHolyday(ad.year, ad.month, ad.day)    # 翌日が祝日
+      flg = true
     end
 
-    # 振替休日判定（月曜日）
-    unless flg then
-      d = Date.new(year, month, day)
-      bd = d - 1
-      if d.wday == 1 &&                        # 月曜日
-         d.year >= 1973 &&                     # 1973 年以後
-         isHolyday1(bd.year, bd.month, bd.day) # 前日が祝日
-      then
-        flg = true
-      end
+    return flg
+  end
+
+  def isSubstituteHolyday_Monday(year, month, day)
+    d = Date.new(year, month, day)
+    bd = d - 1
+    if d.wday == 1 &&                               # 月曜日
+       d.year >= 1973 &&                            # 1973 年以後
+       isNationalHolyday(bd.year, bd.month, bd.day) # 前日が祝日
+    then
+      flg = true
     end
 
-    # 振替休日判定（火曜日から金曜日）
-    unless flg then
-      d = Date.new(year, month, day)
-      if d.wday >= 2 && d.wday <= 5 && # 火曜日から金曜日
-         d.year >= 2005                # 2005 年以後
-        # 日曜日から前日まで祝日が連続している場合
-        flg = true
-        for i in 1..d.wday
-          bd = d - i
-          unless isHolyday1(bd.year, bd.month, bd.day)
-            flg = false
-            break
-          end
+    return flg
+  end
+
+  def isSubstituteHolyday_ExceptMonday(year, month, day)
+    d = Date.new(year, month, day)
+    if d.wday >= 2 && d.wday <= 5 && # 火曜日から金曜日
+       d.year >= 2005                # 2005 年以後
+      # 日曜日から前日まで祝日が連続している場合
+      flg = true
+      for i in 1..d.wday
+        bd = d - i
+        unless isNationalHolyday(bd.year, bd.month, bd.day)
+          flg = false
+          break
         end
       end
     end
+  end
+
+  def isSubstituteHolyday(year, month, day)
+    # 振替休日判定（月曜日）
+    flg = isSubstituteHolyday_Monday(year, month, day) unless flg
+    # 振替休日判定（火曜日から金曜日）
+    flg = isSubstituteHolyday_ExceptMonday(year, month, day) unless flg
+
+    return flg
+  end
+
+  def isHolyday(year=@year, month=@month, day=@day)
+    # 祭日判定
+    flg = isNationalHolyday(year, month, day)
+    # 国民の休日判定
+    flg = isBetweenTwoNationalHolyday(year, month, day) unless flg
+    # 振替休日判定
+    flg = isSubstituteHolyday(year, month, day) unless flg
 
     return flg
   end
@@ -142,10 +157,11 @@ class HolydayCalendar
     return (31 * year + v)/128 - year/4 + year/100
   end
 
-  def isLocalHolyday1(hdays, year=@year, month=@month, day=@day)
+  def isLocalHolyday(holydayslist=nil, year=@year, month=@month, day=@day)
+    holydays = if holydayslist == nil then [[ nil, nil, nil, nil, nil, nil ],] else holydayslist end
     flg = false;
 
-    hdays.each do |hday|
+    holydays.each do |hday|
       hm = hday[0]
       next unless month == hm
 
@@ -162,11 +178,6 @@ class HolydayCalendar
     end
 
     return flg
-  end
-
-  def isLocalHolyday(holydayslist=nil, year=@year, month=@month, day=@day)
-    holydays = if holydayslist == nil then [[ nil, nil, nil, nil, nil, nil ],] else holydayslist end
-    return isLocalHolyday1(holydays, year, month, day)
   end
 
   def self.isMonth(m)

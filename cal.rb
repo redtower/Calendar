@@ -220,7 +220,9 @@ end
 
 # -m オプションの引数を月として取得する。
 if ohash[:m] != nil && isDecimal(ohash[:m]) then
-  abort(m.to_s + " is neither a month number (1..12) nor a name") if !isMonth(ohash[:m].to_i)
+  if !HolydayCalendar.isMonth(ohash[:m].to_i)
+    abort(m.to_s + " is neither a month number (1..12) nor a name")
+  end
   m = ohash[:m].to_i
 end
 
