@@ -159,55 +159,13 @@ class ConsoleColor
   end
 
   def spring(year)
-    # 計算式
-    # (31y+2213)/128-y/4+y/100    (1851年-1999年通用)
-    # (31y+2089)/128-y/4+y/100    (2000年-2150年通用)
-
-    # ref. http://ja.wikipedia.org/wiki/春分の日
-    case year % 4
-    when 0
-      day = 21 if year >= 1900 && year <= 1956
-      day = 20 if year >= 1960 && year <= 2088
-      day = 19 if year >= 2092 && year <= 2096
-    when 1
-      day = 21 if year >= 1901 && year <= 1989
-      day = 20 if year >= 1993 && year <= 2097
-    when 2
-      day = 21 if year >= 1902 && year <= 2022
-      day = 20 if year >= 2026 && year <= 2098
-    when 3
-      day = 22 if year >= 1903 && year <= 1923
-      day = 21 if year >= 1927 && year <= 2055
-      day = 20 if year >= 2059 && year <= 2099
-    end
-
-    return day
+    v = if year < 2000 then 2213 else 2089 end
+    return (31 * year + v)/128 - year/4 + year/100
   end
 
   def autumn(year)
-    # 計算式
-    # (31y+2525)/128-y/4+y/100    (1851年-1999年通用)
-    # (31y+2395)/128-y/4+y/100    (2000年-2150年通用)
-
-    # ref. http://ja.wikipedia.org/wiki/秋分の日
-    case year % 4
-    when 0
-      day = 23 if year >= 1900 && year <= 2008
-      day = 22 if year >= 2012 && year <= 2096
-    when 1
-      day = 24 if year >= 1901 && year <= 1917
-      day = 23 if year >= 1921 && year <= 2041
-      day = 22 if year >= 2045 && year <= 2097
-    when 2
-      day = 24 if year >= 1902 && year <= 1946
-      day = 23 if year >= 1950 && year <= 2074
-      day = 22 if year >= 2078 && year <= 2098
-    when 3
-      day = 24 if year >= 1903 && year <= 1979
-      day = 23 if year >= 1983 && year <= 2099
-    end
-
-     return day
+    v = if year < 2000 then 2525 else 2395 end
+    return (31 * year + v)/128 - year/4 + year/100
   end
 
   def isLocalHolyday(year, month, day)
