@@ -317,9 +317,9 @@ def putday(d, highlight, multi=false)
     for i in 1..size.max
       str = ""
 
-      for j in 0..2
-        if i <= mds[j].size then
-          str << mds[j][i-1]
+      mds.each do |m|
+        if i <= m.size then
+          str << m[i-1]
         else
           str << ($ONEDAY_SPC * 7)
         end
