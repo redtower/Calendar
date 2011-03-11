@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 
 class HolydayCalendar
+  @@year = 0
+  @@month = 0
+  @@day = 0
   def initialize(year=nil, month=nil, day=nil)
-    @year=year
-    @month=month
-    @day=day
+    @@year=year
+    @@month=month
+    @@day=day
   end
 
-  def isNationalHolyday(year, month, day)
+  def self.isNationalHolyday(year=@@year, month=@@month, day=@@day)
     # ref. http://homepage1.nifty.com/~tetsu/ruby/cmd/cal.html
     #          月, 日,開始年,終了年,     区分,  名前
     hdays = [[  1,  1,  1948,  9999,      nil, '元日'         ],
@@ -24,7 +27,7 @@ class HolydayCalendar
              [  5,  4,  2007,  9999,      nil, 'みどりの日'   ],
              [  5,  5,  1948,  9999,      nil, 'こどもの日'   ],
              [  7, 20,  1996,  2002,      nil, '海の日'       ],
-             [  7, 20,  2003,  9999,    'HM3', '海の日'       ],
+             [  7,  0,  2003,  9999,    'HM3', '海の日'       ],
              [  8, 31,  1913,  1913,      nil, '天皇誕生日'   ], # 大正天皇
              [  9, 15,  1966,  2002,      nil, '敬老の日'     ],
              [  9,  0,  2003,  9999,    'HM3', '敬老の日'     ],
@@ -39,6 +42,8 @@ class HolydayCalendar
              [ 11, 23,  1948,  9999,      nil, '勤労感謝の日' ],
              [ 12, 23,  1989,  9999,      nil, '天皇誕生日'   ], # 平成天皇
             ]
+    return false if year.to_i == 0 || month.to_i == 0 || day.to_i == 0
+
     flg = false;
 
     hdays.each do |hday|
@@ -53,10 +58,10 @@ class HolydayCalendar
         hd = hday[1]
       else
         case hday[4]
-        when 'HM2'    then hd = nMonday(year, month, 2) # Happy Monday 第2週
-        when 'HM3'    then hd = nMonday(year, month, 3) # Happy Monday 第3週
-        when 'SPRING' then hd = spring(year)            # 春分の日
-        when 'AUTUMN' then hd = autumn(year)            # 秋分の日
+        when 'HM2'    then hd = HolydayCalendar.nMonday(year, month, 2) # Happy Monday 第2週
+        when 'HM3'    then hd = HolydayCalendar.nMonday(year, month, 3) # Happy Monday 第3週
+        when 'SPRING' then hd = HolydayCalendar.spring(year) # 春分の日
+        when 'AUTUMN' then hd = HolydayCalendar.autumn(year) # 秋分の日
         end
       end
 
@@ -73,9 +78,10 @@ class HolydayCalendar
     d = Date.new(year, month, day)
     bd = d - 1
     ad = d + 1
-    if d.year >= 1986 &&                               # 1986 年以後
-       isNationalHolyday(bd.year, bd.month, bd.day) && # 前日が祝日
-       isNationalHolyday(ad.year, ad.month, ad.day)    # 翌日が祝日
+    if d.year >= 1986 &&        # 1986 年以後
+       d.wday != 0              # 日曜日を除く
+       HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day) && # 前日が祝日
+       HolydayCalendar.isNationalHolyday(ad.year, ad.month, ad.day)    # 翌日が祝日
       flg = true
     end
 
@@ -87,7 +93,7 @@ class HolydayCalendar
     bd = d - 1
     if d.wday == 1 &&                               # 月曜日
        d.year >= 1973 &&                            # 1973 年以後
-       isNationalHolyday(bd.year, bd.month, bd.day) # 前日が祝日
+       HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day) # 前日が祝日
     then
       flg = true
     end
@@ -103,7 +109,7 @@ class HolydayCalendar
       flg = true
       for i in 1..d.wday
         bd = d - i
-        unless isNationalHolyday(bd.year, bd.month, bd.day)
+        unless HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day)
           flg = false
           break
         end
@@ -120,9 +126,9 @@ class HolydayCalendar
     return flg
   end
 
-  def isHolyday(year=@year, month=@month, day=@day)
+  def isHolyday(year=@@year, month=@@month, day=@@day)
     # 祭日判定
-    flg = isNationalHolyday(year, month, day)
+    flg = HolydayCalendar.isNationalHolyday(year, month, day)
     # 国民の休日判定
     flg = isBetweenTwoNationalHolyday(year, month, day) unless flg
     # 振替休日判定
@@ -131,7 +137,11 @@ class HolydayCalendar
     return flg
   end
 
-  def nMonday(year, month, n)
+  def self.nMonday(year, month, n)
+    return 0 if year.to_i == 0 || month.to_i == 0 || n.to_i == 0
+    return 0 unless HolydayCalendar.isMonth(month)
+
+    day = 0
     count = 0
     for i in 1..Date.new(year, month, -1).day
       d = Date.new(year, month, i)
@@ -147,17 +157,21 @@ class HolydayCalendar
     return day
   end
 
-  def spring(year)
+  def self.spring(year)
+    return 0 if year.to_i == 0
+
     v = if year < 2000 then 2213 else 2089 end
     return (31 * year + v)/128 - year/4 + year/100
   end
 
-  def autumn(year)
+  def self.autumn(year)
+    return 0 if year.to_i == 0
+
     v = if year < 2000 then 2525 else 2395 end
     return (31 * year + v)/128 - year/4 + year/100
   end
 
-  def isLocalHolyday(holydayslist=nil, year=@year, month=@month, day=@day)
+  def isLocalHolyday(holydayslist=nil, year=@@year, month=@@month, day=@@day)
     holydays = if holydayslist == nil then [[ nil, nil, nil, nil, nil, nil ],] else holydayslist end
     flg = false;
 
@@ -181,10 +195,10 @@ class HolydayCalendar
   end
 
   def self.isMonth(m)
-    return m >= 1 && m <= 12
+    return m.to_i >= 1 && m.to_i <= 12
   end
 
-  def self.isToday(year=@year, month=@month, day=@day)
+  def self.isToday(year=@@year, month=@@month, day=@@day)
     today = Date.new(Time.now.year, Time.now.month, Time.now.day)
     return today === Date.new(year, month, day)
   end
