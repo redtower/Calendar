@@ -58,8 +58,8 @@ class HolydayCalendar
         hd = hday[1]
       else
         case hday[4]
-        when 'HM2'    then hd = HolydayCalendar.nMonday(year, month, 2) # Happy Monday 第2週
-        when 'HM3'    then hd = HolydayCalendar.nMonday(year, month, 3) # Happy Monday 第3週
+        when 'HM2'    then hd = HolydayCalendar.nMonday(2, year, month) # Happy Monday 第2週
+        when 'HM3'    then hd = HolydayCalendar.nMonday(3, year, month) # Happy Monday 第3週
         when 'SPRING' then hd = HolydayCalendar.spring(year) # 春分の日
         when 'AUTUMN' then hd = HolydayCalendar.autumn(year) # 秋分の日
         end
@@ -74,12 +74,14 @@ class HolydayCalendar
     return flg
   end
 
-  def isBetweenTwoNationalHolyday(year, month, day)
+  def self.isBetweenTwoNationalHolyday(year=@@year, month=@@month, day=@@day)
+    return false if year.to_i == 0 || month.to_i == 0 || day.to_i == 0
+    flg = false
     d = Date.new(year, month, day)
     bd = d - 1
     ad = d + 1
-    if d.year >= 1986 &&        # 1986 年以後
-       d.wday != 0              # 日曜日を除く
+    if d.year >= 1986 &&             # 1986 年以後
+       d.wday != 0 && d.wday != 1 && # 日曜日,月曜日(振替休日)を除く
        HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day) && # 前日が祝日
        HolydayCalendar.isNationalHolyday(ad.year, ad.month, ad.day)    # 翌日が祝日
       flg = true
@@ -88,12 +90,15 @@ class HolydayCalendar
     return flg
   end
 
-  def isSubstituteHolyday_Monday(year, month, day)
+  def self.isSubstituteHolyday_Monday(year=@@year, month=@@month, day=@@day)
+    return false if year.to_i == 0 || month.to_i == 0 || day.to_i == 0
+    flg = false
     d = Date.new(year, month, day)
     bd = d - 1
     if d.wday == 1 &&                               # 月曜日
        d.year >= 1973 &&                            # 1973 年以後
-       HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day) # 前日が祝日
+       !HolydayCalendar.isNationalHolyday(d.year, d.month, d.day) && # 当日が祝日でない
+       HolydayCalendar.isNationalHolyday(bd.year, bd.month, bd.day)  # 前日が祝日
     then
       flg = true
     end
@@ -101,7 +106,9 @@ class HolydayCalendar
     return flg
   end
 
-  def isSubstituteHolyday_ExceptMonday(year, month, day)
+  def self.isSubstituteHolyday_ExceptMonday(year=@@year, month=@@month, day=@@day)
+    return false if year.to_i == 0 || month.to_i == 0 || day.to_i == 0
+    flg = false
     d = Date.new(year, month, day)
     if d.wday >= 2 && d.wday <= 5 && # 火曜日から金曜日
        d.year >= 2005                # 2005 年以後
@@ -115,29 +122,32 @@ class HolydayCalendar
         end
       end
     end
-  end
-
-  def isSubstituteHolyday(year, month, day)
-    # 振替休日判定（月曜日）
-    flg = isSubstituteHolyday_Monday(year, month, day) unless flg
-    # 振替休日判定（火曜日から金曜日）
-    flg = isSubstituteHolyday_ExceptMonday(year, month, day) unless flg
 
     return flg
   end
 
-  def isHolyday(year=@@year, month=@@month, day=@@day)
+  def self.isSubstituteHolyday(year=@@year, month=@@month, day=@@day)
+    # 振替休日判定（月曜日）
+    flg = HolydayCalendar.isSubstituteHolyday_Monday(year, month, day) unless flg
+    # 振替休日判定（火曜日から金曜日）
+    flg = HolydayCalendar.isSubstituteHolyday_ExceptMonday(year, month, day) unless flg
+
+    return flg
+  end
+
+  def self.isHolyday(year=@@year, month=@@month, day=@@day)
+    return false if year.to_i == 0 || month.to_i == 0 || day.to_i == 0
     # 祭日判定
     flg = HolydayCalendar.isNationalHolyday(year, month, day)
     # 国民の休日判定
-    flg = isBetweenTwoNationalHolyday(year, month, day) unless flg
+    flg = HolydayCalendar.isBetweenTwoNationalHolyday(year, month, day) unless flg
     # 振替休日判定
-    flg = isSubstituteHolyday(year, month, day) unless flg
+    flg = HolydayCalendar.isSubstituteHolyday(year, month, day) unless flg
 
     return flg
   end
 
-  def self.nMonday(year, month, n)
+  def self.nMonday(n=1, year=@@year, month=@@month)
     return 0 if year.to_i == 0 || month.to_i == 0 || n.to_i == 0
     return 0 unless HolydayCalendar.isMonth(month)
 
@@ -171,7 +181,7 @@ class HolydayCalendar
     return (31 * year + v)/128 - year/4 + year/100
   end
 
-  def isLocalHolyday(holydayslist=nil, year=@@year, month=@@month, day=@@day)
+  def self.isLocalHolyday(holydayslist=nil, year=@@year, month=@@month, day=@@day)
     holydays = if holydayslist == nil then [[ nil, nil, nil, nil, nil, nil ],] else holydayslist end
     flg = false;
 

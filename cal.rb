@@ -10,7 +10,7 @@ ONEDAY_COLUMN_SIZE = 1 + 2                # 1 日分のカラムサイズ
 $ONEDAY_SPC = ($SPC * ONEDAY_COLUMN_SIZE) # 1 日分の空白
 
 class MyHolydayCalendar < HolydayCalendar
-  def isLocalHolyday(year=@year, month=@month, day=@day)
+  def self.isLocalHolyday(year=@year, month=@month, day=@day)
     hdays = [[  1,  1,    0, 9999, nil,      '年末年始休暇' ],
              [  1,  2,    0, 9999, nil,      '年末年始休暇' ],
              [  1,  3,    0, 9999, nil,      '年末年始休暇' ],
@@ -57,11 +57,9 @@ class ConsoleColor
   end
 
   def date2color(year, month, day)
-    cal = MyHolydayCalendar.new(year, month, day)
-
-    if cal.isHolyday() then
+    if MyHolydayCalendar.isHolyday(year, month, day) then
       color = @@red
-    elsif cal.isLocalHolyday() then
+    elsif MyHolydayCalendar.isLocalHolyday(year, month, day) then
       color = @@red
     else
       color = wday2color(Date.new(year, month, day).wday)

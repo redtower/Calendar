@@ -106,22 +106,26 @@ class TC_HolydayCalendar < Test::Unit::TestCase
   end
 
   def test_nMonday
-    assert_equal( 7, HolydayCalendar.nMonday(2011,   3,   1))
-    assert_equal(14, HolydayCalendar.nMonday(2011,   3,   2))
-    assert_equal(21, HolydayCalendar.nMonday(2011,   3,   3))
-    assert_equal(28, HolydayCalendar.nMonday(2011,   3,   4))
+    assert_equal( 7, HolydayCalendar.nMonday(  1, 2011,   3))
+    assert_equal(14, HolydayCalendar.nMonday(  2, 2011,   3))
+    assert_equal(21, HolydayCalendar.nMonday(  3, 2011,   3))
+    assert_equal(28, HolydayCalendar.nMonday(  4, 2011,   3))
 
-    assert_equal( 0, HolydayCalendar.nMonday(2011,   3,   5))
+    assert_equal( 0, HolydayCalendar.nMonday(  5, 2011,   3))
 
-    assert_equal( 0, HolydayCalendar.nMonday(2011,  13,   1))
-    assert_equal( 0, HolydayCalendar.nMonday(2011,   0,   1))
-    assert_equal( 0, HolydayCalendar.nMonday(2011,  -1,   1))
+    assert_equal( 0, HolydayCalendar.nMonday(  1, 2011,  13))
+    assert_equal( 0, HolydayCalendar.nMonday(  1, 2011,   0))
+    assert_equal( 0, HolydayCalendar.nMonday(  1, 2011,  -1))
 
-    assert_equal( 0, HolydayCalendar.nMonday(2011,   3,  -1))
+    assert_equal( 0, HolydayCalendar.nMonday( -1, 2011,   3))
 
-    assert_equal( 0, HolydayCalendar.nMonday( 'a',   3,   1))
-    assert_equal( 0, HolydayCalendar.nMonday(2011, 'a',   1))
-    assert_equal( 0, HolydayCalendar.nMonday(2011,   3, 'a'))
+    assert_equal( 0, HolydayCalendar.nMonday(  1,  'a',   3))
+    assert_equal( 0, HolydayCalendar.nMonday(  1, 2011, 'a'))
+    assert_equal( 0, HolydayCalendar.nMonday('a', 2011,   3))
+
+    HolydayCalendar.new(2011, 3)
+    assert_equal( 7, HolydayCalendar.nMonday())
+    assert_equal(14, HolydayCalendar.nMonday(2))
   end
 
   def test_isNationalHolyday
@@ -201,7 +205,7 @@ class TC_HolydayCalendar < Test::Unit::TestCase
   end
 
   def test_isNationalHolyday_Range_0503
-    # こどもの日（1948～：5/4）
+    # こどもの日（1948～：5/5）
     assert_equal(false, HolydayCalendar.isNationalHolyday(1947, 5, 5))
     assert(HolydayCalendar.isNationalHolyday(1948, 5, 5))
   end
@@ -267,30 +271,332 @@ class TC_HolydayCalendar < Test::Unit::TestCase
     assert_equal(false, HolydayCalendar.isNationalHolyday(2011, 12,'a'))
   end
 
-  # def isBetweenTwoNationalHolyday(year, month, day)
-  # end
+  def test_isBetweenTwoNationalHolyday
+    # 国民の休日（1988～2006：5/4、ただし1992,1998は振替休日、1997,2003は日曜日のため除外）
+    is = [1988,1989,1990,1991,1993,1994,1995,1996,1999,2000,2001,2002,2004,2005,2006]
+    is.each do |y|
+      assert(HolydayCalendar.isBetweenTwoNationalHolyday(y, 5, 4))
+    end
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(1992, 5, 4))
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(1997, 5, 4))
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(1998, 5, 4))
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(2003, 5, 4))
 
-  # def isSubstituteHolyday_Monday(year, month, day)
-  # end
+    HolydayCalendar.new(1988,5,4)
+    assert(HolydayCalendar.isBetweenTwoNationalHolyday())
 
-  # def isSubstituteHolyday_ExceptMonday(year, month, day)
-  # end
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday( 'a', 12, 23))
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(2011,'a', 23))
+    assert_equal(false, HolydayCalendar.isBetweenTwoNationalHolyday(2011, 12,'a'))
+  end
 
-  # def isSubstituteHolyday(year, month, day)
-  # end
+  def test_isSubstituteHolyday_Monday
+    # 振替休日(月曜日)
+    # 1月2日
+    is = [1978, 1984, 1989, 1995, 2006, 2012, 2017, 2023, 2034, 2040, 2045]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 1, 2))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 1, 2))
 
-  # def isHolyday(year=@@year, month=@@month, day=@@day)
-    # 国民の休日（1988～2006：5/4、ただし1992,1997,1998,2003は日曜日のため除外）
-    # is = [1988,1989,1990,1991,1993,1994,1995,1996,1999,2000,2001,2002,2004,2005,2006]
-    # is.each do |y|
-    #   assert(HolydayCalendar.isNationalHolyday(2006, 5, 4))
-    # end
-    # assert_equal(false, HolydayCalendar.isNationalHolyday(1992, 5, 4))
-    # assert_equal(false, HolydayCalendar.isNationalHolyday(1997, 5, 4))
-    # assert_equal(false, HolydayCalendar.isNationalHolyday(1998, 5, 4))
-    # assert_equal(false, HolydayCalendar.isNationalHolyday(2003, 5, 4))
-  # end
+    # 1月16日
+    is = [1978, 1984, 1989, 1995]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 1,16))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2006, 1,16))
 
-  # def isLocalHolyday(holydayslist=nil, year=@@year, month=@@month, day=@@day)
-  # end
+    # 2月12日
+    is = [1979, 1990, 1996, 2001, 2007, 2018, 2024, 2029, 2035, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 2,12))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 2,12))
+
+    # 3月21日
+    is = [1988, 2005, 2016, 2033, 2044]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 3,21))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 3,21))
+
+    # 3月22日
+    is = [1982, 1999, 2010, 2027]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 3,22))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 3,22))
+
+    # 4月30日
+    is = [1973, 1979, 1984, 1990, 2001, 2007, 2012, 2018, 2029, 2035, 2040, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 4,30))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 4,30))
+
+    # 5月4日
+    is = [1981, 1987, 1992, 1998]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 5, 4))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2009, 5, 4))
+
+    # 5月6日
+    is = [1974, 1985, 1991, 1996, 2002, 2013, 2019, 2024, 2030, 2041, 2047]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 5, 6))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011, 5, 6))
+
+    # 7月21日
+    is = [1997]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 7,21))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2003, 7,21))
+
+    # 9月16日
+    is = [1974, 1985, 1991, 1996, 2002]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 9,16))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2013, 9,16))
+
+    # 9月23日
+    is = [2024]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 9,23))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2013, 9,23))
+
+    # 9月24日
+    is = [1973, 1984, 1990, 2001, 2007, 2018, 2029, 2035, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y, 9,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2012, 9,24))
+
+    # 10月11日
+    is = [1976, 1982, 1993, 1999]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y,10,11))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2004,10,11))
+
+    # 11月4日
+    is = [1974, 1985, 1991, 1996, 2002, 2013, 2019, 2024, 2030, 2041, 2047]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y,11, 4))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011,11, 3))
+
+    # 11月24日
+    is = [1975, 1980, 1986, 1997, 2003, 2008, 2014, 2025, 2031, 2036, 2042]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y,11,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011,11,24))
+
+    # 12月24日
+    is = [1990, 2001, 2007, 2012, 2018, 2029, 2035, 2040, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_Monday(y,12,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday(2011,11,24))
+
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_Monday())
+    HolydayCalendar.new(2012,12,24)
+    assert(HolydayCalendar.isSubstituteHolyday_Monday())
+
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_Monday( 'a', 12, 24))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_Monday(2012,'a', 24))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_Monday(2012, 12,'a'))
+  end
+
+  def test_isSubstituteHolyday_ExceptMonday
+    # 振替休日(月曜日以外)
+    # 5月6日
+    is = [2014, 2025, 2031, 2036, 2042]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_ExceptMonday(y, 5, 6))
+    end
+    is = [2009, 2015, 2020, 2026, 2037, 2043,2048]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday_ExceptMonday(y, 5, 6))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_ExceptMonday(2011, 5, 6))
+
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday_ExceptMonday())
+    HolydayCalendar.new(2009, 5, 6)
+    assert(HolydayCalendar.isSubstituteHolyday_ExceptMonday())
+
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_ExceptMonday( 'a',  5,  6))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_ExceptMonday(2009,'a',  6))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday_ExceptMonday(2009,  5,'a'))
+  end
+
+  def test_isSubstituteHolyday
+    # 振替休日(月曜日)
+    # 1月2日
+    is = [1978, 1984, 1989, 1995, 2006, 2012, 2017, 2023, 2034, 2040, 2045]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 1, 2))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 1, 2))
+
+    # 1月16日
+    is = [1978, 1984, 1989, 1995]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 1,16))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2006, 1,16))
+
+    # 2月12日
+    is = [1979, 1990, 1996, 2001, 2007, 2018, 2024, 2029, 2035, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 2,12))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 2,12))
+
+    # 3月21日
+    is = [1988, 2005, 2016, 2033, 2044]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 3,21))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 3,21))
+
+    # 3月22日
+    is = [1982, 1999, 2010, 2027]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 3,22))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 3,22))
+
+    # 4月30日
+    is = [1973, 1979, 1984, 1990, 2001, 2007, 2012, 2018, 2029, 2035, 2040, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 4,30))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 4,30))
+
+    # 5月4日
+    is = [1981, 1987, 1992, 1998]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 5, 4))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2009, 5, 4))
+
+    # 5月6日
+    is = [1974, 1985, 1991, 1996, 2002, 2013, 2019, 2024, 2030, 2041, 2047]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 5, 6))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 5, 6))
+
+    # 7月21日
+    is = [1997]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 7,21))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2003, 7,21))
+
+    # 9月16日
+    is = [1974, 1985, 1991, 1996, 2002]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 9,16))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2013, 9,16))
+
+    # 9月23日
+    is = [2024]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 9,23))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2013, 9,23))
+
+    # 9月24日
+    is = [1973, 1984, 1990, 2001, 2007, 2018, 2029, 2035, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 9,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2012, 9,24))
+
+    # 10月11日
+    is = [1976, 1982, 1993, 1999]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y,10,11))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2004,10,11))
+
+    # 11月4日
+    is = [1974, 1985, 1991, 1996, 2002, 2013, 2019, 2024, 2030, 2041, 2047]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y,11, 4))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011,11, 3))
+
+    # 11月24日
+    is = [1975, 1980, 1986, 1997, 2003, 2008, 2014, 2025, 2031, 2036, 2042]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y,11,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011,11,24))
+
+    # 12月24日
+    is = [1990, 2001, 2007, 2012, 2018, 2029, 2035, 2040, 2046]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y,12,24))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011,11,24))
+
+    # 振替休日(月曜日以外)
+    # 5月6日
+    is = [2014, 2025, 2031, 2036, 2042]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(2014, 5, 6))
+    end
+    is = [2009, 2015, 2020, 2026, 2037, 2043, 2048]
+    is.each do |y|
+      assert(HolydayCalendar.isSubstituteHolyday(y, 5, 6))
+    end
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday(2011, 5, 6))
+
+    assert_equal(false,HolydayCalendar.isSubstituteHolyday())
+    HolydayCalendar.new(2012,12,24)
+    assert(HolydayCalendar.isSubstituteHolyday())
+
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday( 'a', 12, 24))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday(2012,'a', 24))
+    assert_equal(false, HolydayCalendar.isSubstituteHolyday(2012, 12,'a'))
+  end
+
+  def test_isHolyday
+    assert(HolydayCalendar.isHolyday(2011, 1, 1)) # 元日
+    assert(HolydayCalendar.isHolyday(2011, 1,10)) # 成人の日
+    assert(HolydayCalendar.isHolyday(2011, 2,11)) # 建国記念の日
+    assert(HolydayCalendar.isHolyday(2011, 3,21)) # 春分の日
+    assert(HolydayCalendar.isHolyday(2011, 4,29)) # 昭和の日
+    assert(HolydayCalendar.isHolyday(2011, 5, 3)) # 憲法記念日
+    assert(HolydayCalendar.isHolyday(2011, 5, 4)) # みどりの日
+    assert(HolydayCalendar.isHolyday(2011, 5, 5)) # こどもの日
+    assert(HolydayCalendar.isHolyday(2011, 7,18)) # 海の日  （第3月曜日）
+    assert(HolydayCalendar.isHolyday(2011, 9,19)) # 敬老の日（第3月曜日）
+    assert(HolydayCalendar.isHolyday(2011, 9,23)) # 秋分の日
+    assert(HolydayCalendar.isHolyday(2010,10,11)) # 体育の日（第2月曜日）
+    assert(HolydayCalendar.isHolyday(2011,11, 3)) # 文化の日
+    assert(HolydayCalendar.isHolyday(2011,11,23)) # 勤労感謝の日
+    assert(HolydayCalendar.isHolyday(2011,12,23)) # 天皇誕生日
+
+    assert_equal(false, HolydayCalendar.isHolyday(2011, 1, 2)) # 日曜日
+    assert_equal(false, HolydayCalendar.isHolyday(2011, 1, 3)) # 平日
+    assert_equal(false, HolydayCalendar.isHolyday(2011, 1,15)) # 旧成人の日
+    assert_equal(false, HolydayCalendar.isHolyday(2011, 7,20)) # 旧海の日
+    assert_equal(false, HolydayCalendar.isHolyday(2011, 9,15)) # 旧敬老の日
+    assert_equal(false, HolydayCalendar.isHolyday(2010,10,10)) # 旧体育の日
+
+    assert(HolydayCalendar.isHolyday(2006, 5, 4)) # 国民の休日
+    assert(HolydayCalendar.isHolyday(1995, 1,16)) # 振替休日(月曜日)
+    assert(HolydayCalendar.isHolyday(2007, 2,12)) # 振替休日(月曜日)
+    assert(HolydayCalendar.isHolyday(2009, 5, 6)) # 振替休日(月曜日以外)
+  end
 end
