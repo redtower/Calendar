@@ -11,7 +11,7 @@ d = datetime.datetime.today()
 print '       %4d/ %2d' % (d.year, d.month)
 print ' 日 月 火 水 木 金 土'
 
-sdy = calendar.monthrange(d.year, d.month)[0]
+sdy = 1
 edy = calendar.monthrange(d.year, d.month)[1]
 
 l=[]
@@ -22,7 +22,7 @@ for i in range(sdy, edy+1):
     if k.weekday() != 6 and i == 1: # 月初日で日曜日以外
         for j in range(0, k.weekday() + 1):
             str += '   '
-    
+
     if k.weekday() == 6 and i != 1: # 月初日以外で日曜日
         l.append(str)
         str = ''
