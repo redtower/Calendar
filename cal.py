@@ -8,8 +8,8 @@ import locale
 
 d = datetime.datetime.today()
 
-print '       %4d/ %2d' % (d.year, d.month)
-print ' 日 月 火 水 木 金 土'
+print('       %4d/ %2d' % (d.year, d.month))
+print(' 日 月 火 水 木 金 土')
 
 sdy = 1
 edy = calendar.monthrange(d.year, d.month)[1]
@@ -33,6 +33,6 @@ if len(str) != 0:
     l.append(str)
 
 for item in l:
-    print item
+    print(item)
 
 #    sys.stdout.write(i)
